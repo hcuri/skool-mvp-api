@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,12 +12,20 @@ import (
 	"github.com/hcuri/skool-mvp-app/internal/config"
 	"github.com/hcuri/skool-mvp-app/internal/db"
 	apihttp "github.com/hcuri/skool-mvp-app/internal/http"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func main() {
 	cfg := config.Load()
 
-	logger := log.New(os.Stdout, "api ", log.LstdFlags)
+	logger, err := initLogger(cfg.LogLevel)
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+	zap.ReplaceGlobals(logger)
+
 	store := db.NewInMemoryStore()
 
 	router := apihttp.NewRouter(store, logger)
@@ -31,18 +38,32 @@ func main() {
 	defer stop()
 
 	go func() {
-		logger.Printf("starting server on %s", server.Addr)
+		logger.Info("starting server", zap.String("addr", server.Addr))
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.Fatalf("server error: %v", err)
+			logger.Fatal("server error", zap.Error(err))
 		}
 	}()
 
 	<-ctx.Done()
-	logger.Println("shutdown signal received")
+	logger.Info("shutdown signal received")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		logger.Printf("graceful shutdown failed: %v", err)
+		logger.Error("graceful shutdown failed", zap.Error(err))
 	}
+	logger.Info("server stopped")
+}
+
+func initLogger(level string) (*zap.Logger, error) {
+	cfg := zap.NewProductionConfig()
+
+	if level != "" {
+		var l zapcore.Level
+		if err := l.Set(level); err == nil {
+			cfg.Level = zap.NewAtomicLevelAt(l)
+		}
+	}
+
+	return cfg.Build()
 }

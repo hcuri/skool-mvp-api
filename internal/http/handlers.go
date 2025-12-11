@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 
 	"github.com/hcuri/skool-mvp-app/internal/db"
 )
@@ -19,7 +19,7 @@ func (h *Handler) Healthz(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ListCommunities(w http.ResponseWriter, r *http.Request) {
 	communities, err := h.store.ListCommunities(r.Context())
 	if err != nil {
-		h.logger.Printf("list communities: %v", err)
+		h.logger.Error("list communities failed", zap.Error(err))
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -50,7 +50,7 @@ func (h *Handler) ListPosts(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "community not found", http.StatusNotFound)
 			return
 		}
-		h.logger.Printf("list posts: %v", err)
+		h.logger.Error("list posts failed", zap.Error(err))
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -82,6 +82,6 @@ func writeJSON(w http.ResponseWriter, status int, payload any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(payload); err != nil {
-		log.Printf("write json response: %v", err)
+		zap.L().Error("write json response failed", zap.Error(err))
 	}
 }

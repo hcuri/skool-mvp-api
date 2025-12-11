@@ -12,6 +12,8 @@ Environment variables:
 - `PORT` (default `8080`)
 - `LOG_LEVEL` (default `info`)
 
+Swagger UI: http://localhost:8080/swagger
+
 ## Endpoints
 
 - `GET /healthz` – health check
@@ -19,3 +21,7 @@ Environment variables:
 - `POST /communities` – create a community
 - `GET /communities/{id}/posts` – list posts within a community
 - `POST /communities/{id}/posts` – create a post within a community
+
+## Logging
+
+Structured request logs are emitted with `zap` (method, path, status, bytes, duration). Adjust verbosity via `LOG_LEVEL`.

@@ -1,10 +1,10 @@
 package apihttp
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 
 	"github.com/hcuri/skool-mvp-app/internal/db"
 )
@@ -12,17 +12,18 @@ import (
 // Handler bundles dependencies for HTTP handlers.
 type Handler struct {
 	store  db.Store
-	logger *log.Logger
+	logger *zap.Logger
 }
 
 // NewRouter wires routes to handlers and returns an http.Handler.
-func NewRouter(store db.Store, logger *log.Logger) http.Handler {
+func NewRouter(store db.Store, logger *zap.Logger) http.Handler {
 	h := &Handler{
 		store:  store,
 		logger: logger,
 	}
 
 	r := chi.NewRouter()
+	r.Use(requestLogger(h.logger))
 
 	r.Get("/healthz", h.Healthz)
 

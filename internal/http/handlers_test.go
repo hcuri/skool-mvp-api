@@ -3,18 +3,17 @@ package apihttp
 import (
 	"bytes"
 	"encoding/json"
-	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/hcuri/skool-mvp-app/internal/db"
+	"go.uber.org/zap/zaptest"
 )
 
-func newTestServer() http.Handler {
+func newTestServer(t *testing.T) http.Handler {
 	store := db.NewInMemoryStore()
-	logger := log.New(io.Discard, "", 0)
+	logger := zaptest.NewLogger(t)
 	return NewRouter(store, logger)
 }
 
@@ -28,7 +27,7 @@ func decodeResponse[T any](tb testing.TB, body []byte) T {
 }
 
 func TestHealthz(t *testing.T) {
-	ts := newTestServer()
+	ts := newTestServer(t)
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	rr := httptest.NewRecorder()
 
@@ -44,7 +43,7 @@ func TestHealthz(t *testing.T) {
 }
 
 func TestCommunitiesAndPosts(t *testing.T) {
-	ts := newTestServer()
+	ts := newTestServer(t)
 
 	// Create a community.
 	createBody := bytes.NewBufferString(`{"name":"Go","description":"golang"}`)
@@ -95,7 +94,7 @@ func TestCommunitiesAndPosts(t *testing.T) {
 }
 
 func TestCommunityValidationErrors(t *testing.T) {
-	ts := newTestServer()
+	ts := newTestServer(t)
 
 	// Invalid JSON payload.
 	req := httptest.NewRequest(http.MethodPost, "/communities", bytes.NewBufferString(`{"name":`))
@@ -115,7 +114,7 @@ func TestCommunityValidationErrors(t *testing.T) {
 }
 
 func TestPostEdgeCases(t *testing.T) {
-	ts := newTestServer()
+	ts := newTestServer(t)
 
 	// Unknown community should 404.
 	req := httptest.NewRequest(http.MethodPost, "/communities/missing/posts", bytes.NewBufferString(`{"title":"t","content":"c"}`))
