@@ -34,3 +34,4 @@ go.work.sum
 .gomodcache/
 .gocache/
 .DS_Store
+.idea
