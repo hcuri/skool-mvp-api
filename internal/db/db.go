@@ -111,3 +111,7 @@ func (s *InMemoryStore) CreatePost(_ context.Context, communityID string, input 
 
 	return post, nil
 }
+
+func newID() string {
+	return uuid.NewString()
+}

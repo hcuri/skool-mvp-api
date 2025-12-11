@@ -8,6 +8,7 @@ import (
 type Config struct {
 	Port     string
 	LogLevel string
+	DatabaseURL string
 }
 
 // Load reads configuration from environment variables, supplying defaults when unset.
@@ -15,6 +16,7 @@ func Load() Config {
 	return Config{
 		Port:     getEnv("PORT", "8080"),
 		LogLevel: getEnv("LOG_LEVEL", "info"),
+		DatabaseURL: os.Getenv("DATABASE_URL"),
 	}
 }
 

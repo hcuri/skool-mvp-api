@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: skool-mvp-db
+    environment:
+      POSTGRES_DB: skool_mvp
+      POSTGRES_USER: skool
+      POSTGRES_PASSWORD: skool_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skool -d skool_mvp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:

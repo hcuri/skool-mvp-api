@@ -26,7 +26,17 @@ func main() {
 	defer logger.Sync()
 	zap.ReplaceGlobals(logger)
 
-	store := db.NewInMemoryStore()
+	var store db.Store
+	if cfg.DatabaseURL != "" {
+		store, err = db.NewPostgresStore(context.Background(), cfg.DatabaseURL, logger)
+		if err != nil {
+			logger.Fatal("failed to initialize postgres store", zap.Error(err))
+		}
+		logger.Info("using postgres store")
+	} else {
+		store = db.NewInMemoryStore()
+		logger.Info("using in-memory store")
+	}
 
 	router := apihttp.NewRouter(store, logger)
 	server := &http.Server{
