@@ -93,3 +93,51 @@ func TestCommunitiesAndPosts(t *testing.T) {
 		t.Fatalf("unexpected posts: %+v", posts)
 	}
 }
+
+func TestCommunityValidationErrors(t *testing.T) {
+	ts := newTestServer()
+
+	// Invalid JSON payload.
+	req := httptest.NewRequest(http.MethodPost, "/communities", bytes.NewBufferString(`{"name":`))
+	rr := httptest.NewRecorder()
+	ts.ServeHTTP(rr, req)
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for invalid json, got %d", rr.Code)
+	}
+
+	// Missing required name.
+	req = httptest.NewRequest(http.MethodPost, "/communities", bytes.NewBufferString(`{"description":"desc"}`))
+	rr = httptest.NewRecorder()
+	ts.ServeHTTP(rr, req)
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for missing name, got %d", rr.Code)
+	}
+}
+
+func TestPostEdgeCases(t *testing.T) {
+	ts := newTestServer()
+
+	// Unknown community should 404.
+	req := httptest.NewRequest(http.MethodPost, "/communities/missing/posts", bytes.NewBufferString(`{"title":"t","content":"c"}`))
+	rr := httptest.NewRecorder()
+	ts.ServeHTTP(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 for missing community, got %d", rr.Code)
+	}
+
+	// Invalid JSON payload.
+	req = httptest.NewRequest(http.MethodPost, "/communities/missing/posts", bytes.NewBufferString(`{"title":`))
+	rr = httptest.NewRecorder()
+	ts.ServeHTTP(rr, req)
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for invalid json, got %d", rr.Code)
+	}
+
+	// List posts for missing community should 404.
+	req = httptest.NewRequest(http.MethodGet, "/communities/missing/posts", nil)
+	rr = httptest.NewRecorder()
+	ts.ServeHTTP(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 for missing community posts, got %d", rr.Code)
+	}
+}
