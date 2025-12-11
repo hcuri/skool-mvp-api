@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: Skool MVP API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /healthz:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /communities:
+    get:
+      summary: List communities
+      responses:
+        '200':
+          description: List of communities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Community'
+              examples:
+                sample:
+                  value:
+                    - id: c1
+                      name: Go Fans
+                      description: Community for Go developers
+    post:
+      summary: Create community
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+              required:
+                - name
+            example:
+              name: Go Fans
+              description: Community for Go developers
+      responses:
+        '201':
+          description: Community created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Community'
+  /communities/{id}/posts:
+    get:
+      summary: List posts within a community
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Community ID
+      responses:
+        '200':
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+              examples:
+                sample:
+                  value:
+                    - id: p1
+                      communityId: c1
+                      authorId: u1
+                      title: First post
+                      content: Hello world
+                      createdAt: 2025-12-10T12:00:00Z
+        '404':
+          description: Community not found
+    post:
+      summary: Create post within a community
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Community ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                authorId:
+                  type: string
+                title:
+                  type: string
+                content:
+                  type: string
+              required:
+                - title
+                - content
+            example:
+              authorId: u1
+              title: First post
+              content: Hello world
+      responses:
+        '201':
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Community not found
+
+components:
+  schemas:
+    Community:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - id
+        - name
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+        communityId:
+          type: string
+        authorId:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - communityId
+        - title
+        - content

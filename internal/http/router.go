@@ -36,5 +36,8 @@ func NewRouter(store db.Store, logger *log.Logger) http.Handler {
 		})
 	})
 
+	r.Get("/swagger", swaggerUIHandler)
+	r.Get("/swagger/openapi.yaml", openAPISpecHandler)
+
 	return r
 }
