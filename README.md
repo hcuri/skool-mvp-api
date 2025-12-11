@@ -44,6 +44,13 @@ DATABASE_URL="postgres://skool:skool_pass@host.docker.internal:5432/skool_mvp?ss
 
 If `DATABASE_URL` is unset, the service uses the in-memory store.
 
+The Postgres-backed store auto-creates tables on startup (communities, posts, users, community_memberships).
+
+## Development
+
+- Run tests: `go test ./...`
+- Make targets: `make build`, `make run`, `make docker-build`, `make docker-run`
+
 ## Logging
 
 Structured request logs are emitted with `zap` (method, path, status, bytes, duration). Adjust verbosity via `LOG_LEVEL`.
