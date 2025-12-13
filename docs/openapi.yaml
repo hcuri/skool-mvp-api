@@ -3,7 +3,8 @@ info:
   title: Skool MVP API
   version: 0.1.0
 servers:
-  - url: http://localhost:8080
+  - url: /
+    description: Use current host as base URL
 paths:
   /healthz:
     get:
