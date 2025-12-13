@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: skool-mvp-app
-          image: hcuri/skool-mvp-app:dev2
+          image: hcuri/skool-mvp-app:dev3
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
