@@ -1,33 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: skool-mvp-app
-  namespace: apps
+  name: {{ include "skool-mvp-app.fullname" . }}
+  namespace: {{ .Values.namespace | default "apps" | quote }}
   labels:
-    app: skool-mvp-app
+    {{- include "skool-mvp-app.labels" . | nindent 4 }}
 spec:
-  replicas: 2
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: skool-mvp-app
+      {{- include "skool-mvp-app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: skool-mvp-app
+        {{- include "skool-mvp-app.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: skool-mvp-app
-          image: hcuri/skool-mvp-app:dev3
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 8080
           env:
             - name: LOG_LEVEL
-              value: "info"
+              value: {{ .Values.env.logLevel | quote }}
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: skool-mvp-db
+                  name: {{ .Values.env.databaseSecretName | quote }}
                   key: DATABASE_URL
           readinessProbe:
             httpGet:
@@ -46,8 +46,4 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
           resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              memory: 128Mi
+            {{- toYaml .Values.resources | nindent 12 }}
