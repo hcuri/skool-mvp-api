@@ -2,7 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "skool-mvp-app.fullname" . }}
-  namespace: {{ .Values.namespace | default "apps" | quote }}
+  {{- if .Values.namespace }}
+  namespace: {{ .Values.namespace | quote }}
+  {{- end }}
   labels:
     {{- include "skool-mvp-app.labels" . | nindent 4 }}
 spec:
