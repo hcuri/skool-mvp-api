@@ -54,3 +54,13 @@ The Postgres-backed store auto-creates tables on startup (communities, posts, us
 ## Logging
 
 Structured request logs are emitted with `zap` (method, path, status, bytes, duration). Adjust verbosity via `LOG_LEVEL`.
+
+## Repo layout
+
+- `cmd/api/` – main entrypoint.
+- `internal/` – config, HTTP handlers, router, DB stores.
+- `docs/` – OpenAPI spec and architecture notes.
+- `k8s/` – raw Kubernetes manifests (namespace, Deployment, Service, Secret placeholder).
+- `charts/skool-mvp-app/` – Helm chart for the app (Deployment + Service).
+- `docker-compose.yml` – local Postgres.
+- `Dockerfile` / `Makefile` – build and run helpers.
