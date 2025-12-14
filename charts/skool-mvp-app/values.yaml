@@ -4,7 +4,7 @@ namespace: apps
 
 image:
   repository: hcuri/skool-mvp-app
-  tag: dev3
+  tag: latest
   pullPolicy: IfNotPresent
 
 service:
