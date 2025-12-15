@@ -73,7 +73,7 @@ jobs:
       - name: Set image tag in dev values
         uses: mikefarah/yq@v4
         with:
-          cmd: yq -i ".image.tag = \"${{ env.SHA }}\"" environments/dev/skool-mvp-api/values.yaml
+          cmd: yq -i '.image.tag = env(SHA)' environments/dev/skool-mvp-api/values.yaml
       - name: Ensure GitHub CLI
         run: |
           if ! command -v gh >/dev/null; then
