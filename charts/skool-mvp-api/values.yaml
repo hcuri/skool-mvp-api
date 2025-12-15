@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-  repository: hcuri/skool-mvp-app
+  repository: hcuri/skool-mvp-api
   tag: latest
   pullPolicy: IfNotPresent
 

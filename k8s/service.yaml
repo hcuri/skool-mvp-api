@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: skool-mvp-app
+  name: skool-mvp-api
   namespace: apps
   labels:
-    app: skool-mvp-app
+    app: skool-mvp-api
 spec:
   type: LoadBalancer
   selector:
-    app: skool-mvp-app
+    app: skool-mvp-api
   ports:
     - name: http
       port: 80

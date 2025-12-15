@@ -1,5 +1,5 @@
 apiVersion: v2
-name: skool-mvp-app
+name: skool-mvp-api
 description: Skool MVP API deployment
 type: application
 version: 0.1.0

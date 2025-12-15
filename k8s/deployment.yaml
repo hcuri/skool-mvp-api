@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: skool-mvp-app
+  name: skool-mvp-api
   namespace: apps
   labels:
-    app: skool-mvp-app
+    app: skool-mvp-api
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: skool-mvp-app
+      app: skool-mvp-api
   template:
     metadata:
       labels:
-        app: skool-mvp-app
+        app: skool-mvp-api
     spec:
       containers:
-        - name: skool-mvp-app
-          image: hcuri/skool-mvp-app:dev3
+        - name: skool-mvp-api
+          image: hcuri/skool-mvp-api:dev3
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

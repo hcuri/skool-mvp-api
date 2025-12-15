@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "skool-mvp-app.fullname" . }}
+  name: {{ include "skool-mvp-api.fullname" . }}
   {{- if .Values.namespace }}
   namespace: {{ .Values.namespace | quote }}
   {{- end }}
   labels:
-    {{- include "skool-mvp-app.labels" . | nindent 4 }}
+    {{- include "skool-mvp-api.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "skool-mvp-app.selectorLabels" . | nindent 6 }}
+      {{- include "skool-mvp-api.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "skool-mvp-app.selectorLabels" . | nindent 8 }}
+        {{- include "skool-mvp-api.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-        - name: skool-mvp-app
+        - name: skool-mvp-api
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
