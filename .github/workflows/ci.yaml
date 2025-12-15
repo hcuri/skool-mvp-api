@@ -25,8 +25,13 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    outputs:
+      sha: ${{ steps.set-sha.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
+      - name: Set short SHA
+        id: set-sha
+        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -34,10 +39,13 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push (linux/amd64)
         run: |
-          docker build -t hcuri/skool-mvp-api:${GITHUB_SHA} .
-          docker push hcuri/skool-mvp-api:${GITHUB_SHA}
+          SHA="${{ steps.set-sha.outputs.sha }}"
+          docker build -t hcuri/skool-mvp-api:${SHA} .
+          docker push hcuri/skool-mvp-api:${SHA}
       - name: Summarize image tag
-        run: echo "Pushed image hcuri/skool-mvp-api:${GITHUB_SHA}" >> $GITHUB_STEP_SUMMARY
+        run: |
+          SHA="${{ steps.set-sha.outputs.sha }}"
+          echo "Pushed image hcuri/skool-mvp-api:${SHA}" >> $GITHUB_STEP_SUMMARY
 
   bump-gitops:
     if: github.ref == 'refs/heads/main'
@@ -46,6 +54,8 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    env:
+      SHA: ${{ needs.build-and-push.outputs.sha }}
     steps:
       - name: Checkout gitops repo
         uses: actions/checkout@v4
@@ -53,11 +63,15 @@ jobs:
           repository: hcuri/skool-mvp-gitops
           token: ${{ secrets.GH_PAT }}
           fetch-depth: 0
+      - name: Install yq
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
       - name: Set image tag in dev values
         run: |
           FILE="environments/dev/skool-mvp-api/values.yaml"
-          TAG="${GITHUB_SHA}"
-          npx --yes yaml-tools set "$FILE" image.tag "$TAG"
+          TAG="${SHA}"
+          yq -i ".image.tag = \"${TAG}\"" "$FILE"
       - name: Install GitHub CLI
         run: |
           curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
@@ -68,12 +82,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b bump-skool-mvp-api-${GITHUB_SHA}
+          git checkout -b bump-skool-mvp-api-${SHA}
           git add environments/dev/skool-mvp-api/values.yaml
-          git commit -m "chore: bump skool-mvp-api image to ${GITHUB_SHA}"
+          git commit -m "chore: bump skool-mvp-api image to ${SHA}"
       - name: Push branch
         run: |
-          git push origin bump-skool-mvp-api-${GITHUB_SHA}
+          git push origin bump-skool-mvp-api-${SHA}
       - name: Create PR to gitops repo
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
@@ -82,6 +96,6 @@ jobs:
           API_COMMIT_URL="${API_REPO}/commit/${GITHUB_SHA}"
           gh pr create \
             --base main \
-            --head bump-skool-mvp-api-${GITHUB_SHA} \
-            --title "chore: bump skool-mvp-api image to ${GITHUB_SHA}" \
-            --body "Automated image bump from skool-mvp-api CI.\n\nImage: \`hcuri/skool-mvp-api:${GITHUB_SHA}\`\nSource commit: ${API_COMMIT_URL}\nPipeline: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            --head bump-skool-mvp-api-${SHA} \
+            --title "chore: bump skool-mvp-api image to ${SHA}" \
+            --body "Automated image bump from skool-mvp-api CI.\n\nImage: \`hcuri/skool-mvp-api:${SHA}\`\nSource commit: ${API_COMMIT_URL}\nPipeline: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
