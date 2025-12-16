@@ -19,6 +19,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
+          cache: false
       - name: Run tests
         run: go test ./...
 
@@ -71,9 +72,10 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           fetch-depth: 0
       - name: Set image tag in dev values
-        uses: mikefarah/yq@v4
-        with:
-          cmd: yq -i '.image.tag = env(SHA)' environments/dev/skool-mvp-api/values.yaml
+        run: |
+          FILE="environments/dev/skool-mvp-api/values.yaml"
+          TAG="${SHA}"
+          sed -i -E "s/^  tag: .*/  tag: ${TAG}/" "$FILE"
       - name: Ensure GitHub CLI
         run: |
           if ! command -v gh >/dev/null; then
@@ -82,6 +84,17 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y gh
           fi
+      - name: Create PR body file
+        run: |
+          API_REPO="https://github.com/${GITHUB_REPOSITORY}"
+          API_COMMIT_URL="${API_REPO}/commit/${GITHUB_SHA}"
+          cat > pr-body.txt << EOF
+          Automated image bump from skool-mvp-api CI.
+
+          Image: \`hcuri/skool-mvp-api:${SHA}\`
+          Source commit: ${API_COMMIT_URL}
+          Pipeline: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          EOF
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
@@ -102,4 +115,4 @@ jobs:
             --base main \
             --head bump-skool-mvp-api-${SHA} \
             --title "chore: bump skool-mvp-api image to ${SHA}" \
-            --body "Automated image bump from skool-mvp-api CI.\n\nImage: \`hcuri/skool-mvp-api:${SHA}\`\nSource commit: ${API_COMMIT_URL}\nPipeline: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            --body-file pr-body.txt
