@@ -13,6 +13,9 @@ env:
   logLevel: info
   databaseSecretName: skool-mvp-db
 
+servicemonitor:
+  enabled: true
+
 resources:
   requests:
     cpu: 100m

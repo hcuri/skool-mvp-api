@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 
 	"github.com/hcuri/skool-mvp-app/internal/db"
@@ -23,9 +24,11 @@ func NewRouter(store db.Store, logger *zap.Logger) http.Handler {
 	}
 
 	r := chi.NewRouter()
+	r.Use(metricsMiddleware)
 	r.Use(requestLogger(h.logger))
 
 	r.Get("/healthz", h.Healthz)
+	r.Get("/metrics", promhttp.Handler().ServeHTTP)
 
 	r.Route("/communities", func(r chi.Router) {
 		r.Get("/", h.ListCommunities)
