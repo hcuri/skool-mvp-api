@@ -75,7 +75,8 @@ jobs:
         run: |
           FILE="environments/dev/skool-mvp-api/values.yaml"
           TAG="${SHA}"
-          sed -i -E "s/^  tag: .*/  tag: ${TAG}/" "$FILE"
+          # quote the tag to avoid YAML interpreting hex-like values (e.g., 364e87) as scientific notation
+          sed -i -E "s/^  tag: .*/  tag: \"${TAG}\"/" "$FILE"
       - name: Ensure GitHub CLI
         run: |
           if ! command -v gh >/dev/null; then
