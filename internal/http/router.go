@@ -28,6 +28,7 @@ func NewRouter(store db.Store, logger *zap.Logger) http.Handler {
 	r.Use(requestLogger(h.logger))
 
 	r.Get("/healthz", h.Healthz)
+	r.Head("/healthz", h.Healthz)
 	r.Get("/metrics", promhttp.Handler().ServeHTTP)
 
 	r.Route("/communities", func(r chi.Router) {

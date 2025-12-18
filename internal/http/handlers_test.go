@@ -42,6 +42,18 @@ func TestHealthz(t *testing.T) {
 	}
 }
 
+func TestHealthzHead(t *testing.T) {
+	ts := newTestServer(t)
+	req := httptest.NewRequest(http.MethodHead, "/healthz", nil)
+	rr := httptest.NewRecorder()
+
+	ts.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rr.Code)
+	}
+}
+
 func TestCommunitiesAndPosts(t *testing.T) {
 	ts := newTestServer(t)
 
