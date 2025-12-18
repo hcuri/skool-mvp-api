@@ -6,7 +6,7 @@ metadata:
   labels:
     app: skool-mvp-api
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: skool-mvp-api
   ports:

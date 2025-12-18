@@ -20,10 +20,13 @@ Go HTTP API for a Skool-like community platform, containerized with Docker and d
 
 ## API endpoints
 - `GET /healthz` – health check
+- `HEAD /healthz` – health check (so `curl -I` works cleanly)
 - `GET /communities` – list communities
 - `POST /communities` – create a community
 - `GET /communities/{id}/posts` – list posts within a community
 - `POST /communities/{id}/posts` – create a post within a community
+- `GET /metrics` – Prometheus metrics
+- `GET /swagger` – Swagger UI
 
 ## Local development / running locally
 1) Start Postgres (or use in-memory by omitting `DATABASE_URL`):
@@ -48,6 +51,7 @@ Go HTTP API for a Skool-like community platform, containerized with Docker and d
 ## Deployment
 - Packaged as a Helm chart (`charts/skool-mvp-api`).
 - In EKS, ArgoCD pulls the chart from this repo and applies environment-specific values from the GitOps repo: https://github.com/hcuri/skool-mvp-gitops
+- In dev, the API is exposed via AWS ALB Ingress at `https://api.skoo1.com` (Service is `ClusterIP`).
 - Kubernetes Secrets provide `DATABASE_URL` (e.g., `skool-mvp-db`), not committed to git.
 
 ## Security / secrets
