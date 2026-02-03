@@ -13,14 +13,18 @@ import (
 var (
 	// ErrCommunityNotFound indicates the requested community does not exist.
 	ErrCommunityNotFound = errors.New("community not found")
+	// ErrPostNotFound indicates the requested post does not exist.
+	ErrPostNotFound = errors.New("post not found")
 )
 
 // Store defines the persistence contract for the application.
 type Store interface {
 	ListCommunities(ctx context.Context) ([]Community, error)
 	CreateCommunity(ctx context.Context, input CommunityInput) (Community, error)
+	DeleteCommunity(ctx context.Context, communityID string) error
 	ListPostsByCommunity(ctx context.Context, communityID string) ([]Post, error)
 	CreatePost(ctx context.Context, communityID string, input PostInput) (Post, error)
+	DeletePost(ctx context.Context, communityID, postID string) error
 }
 
 // InMemoryStore is a simple, concurrency-safe store backed by in-memory maps.
@@ -70,6 +74,27 @@ func (s *InMemoryStore) CreateCommunity(_ context.Context, input CommunityInput)
 	return community, nil
 }
 
+func (s *InMemoryStore) DeleteCommunity(_ context.Context, communityID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if _, ok := s.communities[communityID]; !ok {
+		return ErrCommunityNotFound
+	}
+
+	delete(s.communities, communityID)
+	delete(s.posts, communityID)
+
+	// remove from order slice
+	for i, id := range s.communityOrder {
+		if id == communityID {
+			s.communityOrder = append(s.communityOrder[:i], s.communityOrder[i+1:]...)
+			break
+		}
+	}
+	return nil
+}
+
 func (s *InMemoryStore) ListPostsByCommunity(_ context.Context, communityID string) ([]Post, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -110,6 +135,29 @@ func (s *InMemoryStore) CreatePost(_ context.Context, communityID string, input 
 	s.posts[communityID] = append(s.posts[communityID], post)
 
 	return post, nil
+}
+
+func (s *InMemoryStore) DeletePost(_ context.Context, communityID, postID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	posts, ok := s.posts[communityID]
+	if !ok {
+		// if no posts stored yet, check community existence
+		if _, ok := s.communities[communityID]; !ok {
+			return ErrCommunityNotFound
+		}
+		return ErrPostNotFound
+	}
+
+	for i, p := range posts {
+		if p.ID == postID {
+			s.posts[communityID] = append(posts[:i], posts[i+1:]...)
+			return nil
+		}
+	}
+
+	return ErrPostNotFound
 }
 
 func newID() string {

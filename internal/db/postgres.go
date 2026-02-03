@@ -112,6 +112,21 @@ func (s *PostgresStore) CreateCommunity(ctx context.Context, input CommunityInpu
 	return community, nil
 }
 
+func (s *PostgresStore) DeleteCommunity(ctx context.Context, communityID string) error {
+	res, err := s.db.ExecContext(ctx, `DELETE FROM communities WHERE id = $1`, communityID)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return ErrCommunityNotFound
+	}
+	return nil
+}
+
 func (s *PostgresStore) ListPostsByCommunity(ctx context.Context, communityID string) ([]Post, error) {
 	rows, err := s.db.QueryContext(ctx, `SELECT id, community_id, author_id, title, content, created_at FROM posts WHERE community_id = $1 ORDER BY created_at DESC`, communityID)
 	if err != nil {
@@ -173,6 +188,23 @@ func (s *PostgresStore) CreatePost(ctx context.Context, communityID string, inpu
 	}
 
 	return post, nil
+}
+
+func (s *PostgresStore) DeletePost(ctx context.Context, communityID, postID string) error {
+	res, err := s.db.ExecContext(ctx,
+		`DELETE FROM posts WHERE id = $1 AND community_id = $2`,
+		postID, communityID)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return ErrPostNotFound
+	}
+	return nil
 }
 
 func isForeignKeyViolation(err error) bool {

@@ -34,10 +34,12 @@ func NewRouter(store db.Store, logger *zap.Logger) http.Handler {
 	r.Route("/communities", func(r chi.Router) {
 		r.Get("/", h.ListCommunities)
 		r.Post("/", h.CreateCommunity)
+		r.Delete("/{id}", h.DeleteCommunity)
 
 		r.Route("/{id}/posts", func(r chi.Router) {
 			r.Get("/", h.ListPosts)
 			r.Post("/", h.CreatePost)
+			r.Delete("/{postId}", h.DeletePost)
 		})
 	})
 

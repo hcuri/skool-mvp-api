@@ -63,6 +63,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Community'
+  /communities/{id}:
+    delete:
+      summary: Delete community
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Community ID
+      responses:
+        '204':
+          description: Community deleted
+        '404':
+          description: Community not found
   /communities/{id}/posts:
     get:
       summary: List posts within a community
@@ -131,6 +146,27 @@ paths:
                 $ref: '#/components/schemas/Post'
         '404':
           description: Community not found
+  /communities/{id}/posts/{postId}:
+    delete:
+      summary: Delete post within a community
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Community ID
+        - in: path
+          name: postId
+          required: true
+          schema:
+            type: string
+          description: Post ID
+      responses:
+        '204':
+          description: Post deleted
+        '404':
+          description: Community or post not found
 
 components:
   schemas:

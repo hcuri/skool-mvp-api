@@ -103,6 +103,30 @@ func TestCommunitiesAndPosts(t *testing.T) {
 	if len(posts) != 1 || posts[0].ID != post.ID {
 		t.Fatalf("unexpected posts: %+v", posts)
 	}
+
+	// Delete post.
+	rr = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodDelete, "/communities/"+community.ID+"/posts/"+post.ID, nil)
+	ts.ServeHTTP(rr, req)
+	if rr.Code != http.StatusNoContent {
+		t.Fatalf("expected 204 on delete post, got %d: %s", rr.Code, rr.Body.String())
+	}
+
+	// Delete community.
+	rr = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodDelete, "/communities/"+community.ID, nil)
+	ts.ServeHTTP(rr, req)
+	if rr.Code != http.StatusNoContent {
+		t.Fatalf("expected 204 on delete community, got %d: %s", rr.Code, rr.Body.String())
+	}
+
+	// Ensure community gone.
+	rr = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodGet, "/communities/"+community.ID+"/posts", nil)
+	ts.ServeHTTP(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 after community delete, got %d", rr.Code)
+	}
 }
 
 func TestCommunityValidationErrors(t *testing.T) {
